@@ -13,12 +13,13 @@ if __name__ == '__main__':
 
     time_1 = time.time()
 
-    print np.sqrt(np.sum(np.square(vec_1 - vec_2)))
 
+    print(np.sqrt(np.sum(np.square(vec_1 - vec_2))))
+###core Linear Algebra Tools,norm,inv,solve,det,lstsq,pinv,matrix_power
     time_2 = time.time()
-    print time_2-time_1
+    print(time_2-time_1)
 
     print np.linalg.norm(vec_1 - vec_2)
 
     time_3 = time.time()
-    print time_3-time_2
+    print(time_3-time_2)

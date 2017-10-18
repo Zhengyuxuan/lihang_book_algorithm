@@ -12,7 +12,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 sign_time_count = 0
@@ -48,7 +48,7 @@ class Sign(object):
 
         for i in self.indexes:
             score = 0
-            for j in xrange(self.N):
+            for j in range(self.N):
                 val = -1
                 if self.X[j]<i:
                     val = 1
@@ -74,7 +74,7 @@ class Sign(object):
 
         for i in self.indexes:
             score = 0
-            for j in xrange(self.N):
+            for j in range(self.N):
                 val = 1
                 if self.X[j]<i:
                     val = -1
@@ -150,7 +150,7 @@ class AdaBoost(object):
 
         Z = 0
 
-        for i in xrange(self.N):
+        for i in range(self.N):
             Z += self._w_(index,classifier,i)
 
         return Z
@@ -159,16 +159,16 @@ class AdaBoost(object):
 
         self._init_parameters_(features,labels)
 
-        for times in xrange(self.M):
+        for times in range(self.M):
             logging.debug('iterater %d' % times)
 
             time1 = time.time()
             map_time = 0
 
             best_classifier = (100000,None,None)        #(误差率,针对的特征，分类器)
-            for i in xrange(self.n):
+            for i in range(self.n):
                 map_time -= time.time()
-                features = map(lambda x:x[i],self.X)
+                features = list(map(lambda x:x[i],self.X))
                 map_time += time.time()
                 classifier = Sign(features,self.Y,self.w)
                 error_score = classifier.train()
@@ -179,10 +179,10 @@ class AdaBoost(object):
             em = best_classifier[0]
 
             # 分析用，之后删除 开始
-            print 'em is %s, index is %d' % (str(em),best_classifier[1])
+            print('em is %s, index is %d' % (str(em),best_classifier[1]))
             time2 = time.time()
             global sign_time_count
-            print '总运行时间:%s, 那两段关键代码运行时间:%s, map的时间是:%s' % (str(time2-time1),str(sign_time_count),str(map_time))
+            print('总运行时间:%s, 那两段关键代码运行时间:%s, map的时间是:%s' % (str(time2-time1),str(sign_time_count),str(map_time)))
             sign_time_count = 0
             # 分析用，之后删除  结束
 
@@ -196,13 +196,13 @@ class AdaBoost(object):
             Z = self._Z_(best_classifier[1],best_classifier[2])
 
             # 计算训练集权值分布 8.4
-            for i in xrange(self.N):
+            for i in range(self.N):
                 self.w[i] = self._w_(best_classifier[1],best_classifier[2],i)/Z
 
     def _predict_(self,feature):
 
         result = 0.0
-        for i in xrange(self.M):
+        for i in range(self.M):
             index = self.classifier[i][0]
             classifier = self.classifier[i][1]
 
@@ -225,7 +225,7 @@ class AdaBoost(object):
 # 二值化
 def binaryzation(img):
     cv_img = img.astype(np.uint8)
-    cv2.threshold(cv_img,50,1,cv2.cv.CV_THRESH_BINARY_INV,cv_img)
+    cv2.threshold(cv_img,50,1,cv2.THRESH_BINARY_INV,cv_img)
     return cv_img
 
 def binaryzation_features(trainset):
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    print 'Start read data'
+    print('Start read data')
 
     time_1 = time.time()
 
@@ -264,21 +264,29 @@ if __name__ == '__main__':
     train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size=0.5, random_state=0)
 
     time_2 = time.time()
-    print 'read data cost ',time_2 - time_1,' second','\n'
+    print('read data cost ',time_2 - time_1,' second','\n')
 
-    print 'Start training'
-    train_labels = map(lambda x:2*x-1,train_labels)
+    print('Start training')
+    '''
+    In Python 3, map returns an iterator. If your function expects a list, 
+    the iterator has to be explicitly converted, like this:data = list(map(...))
+    "XXX"object is not subscriptable
+    说的是XXX对象不是可索引的，可索引的对象有list,tuple等
+    如果你确定你的XXX是一个可迭代对象的话，
+    可以尝试用list()函数把它转化为列表，然后通过索引读取元素
+    '''
+    train_labels = list(map(lambda x:2*x-1,train_labels))
     ada = AdaBoost()
     ada.train(train_features, train_labels)
 
     time_3 = time.time()
-    print 'training cost ',time_3 - time_2,' second','\n'
+    print('training cost ',time_3 - time_2,' second','\n')
 
-    print 'Start predicting'
+    print('Start predicting')
     test_predict = ada.predict(test_features)
     time_4 = time.time()
-    print 'predicting cost ',time_4 - time_3,' second','\n'
+    print('predicting cost ',time_4 - time_3,' second','\n')
 
     test_labels = map(lambda x:2*x-1,test_labels)
     score = accuracy_score(test_labels,test_predict)
-    print "The accruacy socre is ", score
+    print("The accruacy socre is ", score)

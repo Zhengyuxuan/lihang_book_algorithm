@@ -49,7 +49,7 @@ def data_visualization(X,y,title):
 
     size = len(y)
 
-    for i in xrange(size):
+    for i in range(size):
         X_1 = X[0][i]
         X_2 = X[1][i]
 
@@ -76,7 +76,7 @@ def rebuild_features(features):
     size = len(features[0])
 
     new_features = []
-    for i in xrange(size):
+    for i in range(size):
         new_features.append([features[0][i],features[1][i]])
 
     return new_features
@@ -92,7 +92,7 @@ def generate_dataset(size, noisy = False, visualization = True):
 
     testset_size = int(len(y)*0.333)
 
-    indexes = [i for i in xrange(len(y))]
+    indexes = [i for i in range(len(y))]
     test_indexes = random.sample(indexes,testset_size)
     train_indexes = list(set(indexes)-set(test_indexes))
 
